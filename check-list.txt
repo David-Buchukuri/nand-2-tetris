@@ -1,0 +1,9 @@
+And ✅️
+
+Not ✅️
+
+Or ✅️
+
+Xor ✅️
+
+Mux ✅️
