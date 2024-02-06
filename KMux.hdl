@@ -1,0 +1,42 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/01/Mux.hdl
+/** 
+ * Multiplexor:
+ * if (sel == 0) out = a, else out = b
+ */
+ // Mux Optimized with karnaugh map
+
+CHIP KMux {
+    IN a, b, sel;
+    OUT out;
+
+    PARTS:
+    /* after k map optimization we are left with 3 and conditions
+        -   !sel ^ a
+        -   sel ^ !a ^ b
+        -   sel ^ a ^ b
+    */
+    
+    Not(in=a, out=notA);
+    Not(in=sel, out=notSel);
+
+    // first and
+    And(a=a, b=notSel, out=firstFinal);
+    
+    // second and
+    And(a=notA, b=b, out=secondSubCondition);
+    And(a=secondSubCondition, b=sel, out=secondFinal);
+
+    // third and
+    And(a=a, b=b, out=thirdSubCondition);
+    And(a=thirdSubCondition, b=sel, out=thirdFinal);
+
+
+    // combining
+    Or(a=firstFinal, b=secondFinal, out=firstOut);
+
+    // final eval
+    Or(a=firstOut, b=thirdFinal, out=out);
+}
