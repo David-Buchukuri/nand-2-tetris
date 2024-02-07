@@ -15,3 +15,13 @@ And16 ✅️
 Or16 ✅️
 
 Mux16 ✅️
+
+Or8Way ✅️
+
+Mux4Way
+
+Mux8Way
+
+DMux4Way
+
+DMux8Way
