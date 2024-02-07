@@ -11,34 +11,44 @@ CHIP Mux {
     OUT out;
 
     PARTS:
-    // in total we will have 4 and conditions, each with 3 elements
-    Not(in=a, out=notA);
-    Not(in=b, out=notB);
     Not(in=sel, out=notSel);
-
-    // first and
-    And(a=a, b=notB, out=firstSubCondition);
-    And(a=firstSubCondition, b=notSel, out=firstFinal);
     
-    // second and
-    And(a=a, b=b, out=secondSubCondition);
-    And(a=secondSubCondition, b=notSel, out=secondFinal);
-
-    // third and
-    And(a=notA, b=b, out=thirdSubCondition);
-    And(a=thirdSubCondition, b=sel, out=thirdFinal);
-
-    // fourth and
-    And(a=a, b=b, out=fourthSubCondition);
-    And(a=fourthSubCondition, b=sel, out=fourthFinal);
-
-    // combining
-    // first part
-    Or(a=firstFinal, b=secondFinal, out=firstOut);
-
-    // second part
-    Or(a=thirdFinal, b=fourthFinal, out=secondOut);
+    And(a=a, b=notSel, out=firstOut);
+    
+    And(a=sel, b=b, out=secondOut);
 
     // final eval
     Or(a=firstOut, b=secondOut, out=out);
+
+    // brute force way using truth table
+    // // in total we will have 4 and conditions, each with 3 elements
+    // Not(in=a, out=notA);
+    // Not(in=b, out=notB);
+    // Not(in=sel, out=notSel);
+
+    // // first and
+    // And(a=a, b=notB, out=firstSubCondition);
+    // And(a=firstSubCondition, b=notSel, out=firstFinal);
+    
+    // // second and
+    // And(a=a, b=b, out=secondSubCondition);
+    // And(a=secondSubCondition, b=notSel, out=secondFinal);
+
+    // // third and
+    // And(a=notA, b=b, out=thirdSubCondition);
+    // And(a=thirdSubCondition, b=sel, out=thirdFinal);
+
+    // // fourth and
+    // And(a=a, b=b, out=fourthSubCondition);
+    // And(a=fourthSubCondition, b=sel, out=fourthFinal);
+
+    // // combining
+    // // first part
+    // Or(a=firstFinal, b=secondFinal, out=firstOut);
+
+    // // second part
+    // Or(a=thirdFinal, b=fourthFinal, out=secondOut);
+
+    // // final eval
+    // Or(a=firstOut, b=secondOut, out=out);
 }
