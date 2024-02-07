@@ -7,3 +7,11 @@ Or ✅️
 Xor ✅️
 
 Mux ✅️
+
+Not16 ✅️
+
+And16
+
+Or16
+
+Mux16
