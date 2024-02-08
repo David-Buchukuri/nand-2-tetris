@@ -14,7 +14,7 @@ CHIP Mux {
     Not(in=sel, out=notSel);
     
     And(a=a, b=notSel, out=firstOut);
-    
+
     And(a=sel, b=b, out=secondOut);
 
     // final eval
