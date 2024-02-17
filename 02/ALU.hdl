@@ -41,5 +41,44 @@ CHIP ALU {
         ng;      // if (out < 0)  equals 1, else 0
 
     PARTS:
-    //// Replace this comment with your code.
+    // if zx == 1, then x = 0
+    oneBitTo16(in=zx, out=zx16);
+    Not16(in=zx16, out=notZx16);
+    And16(a=notZx16, b=x, out=processedX1);
+
+    // if nx == 1, then x = !x
+    Xor16(a=nx, b=processedX1, out=processedX2);
+    
+
+    // if zy == 1, then y = 0
+    oneBitTo16(in=zy, out=zy16);
+    Not16(in=zy16, out=notZy16);
+    And16(a=notZy16, b=y, out=processedY1);
+
+    // if ny == 1, then y = !y
+    Xor16(a=ny, b=processedY1, out=processedY2);
+
+    // if f == 1, out = x + y, else out = x & y
+    Add16(a=processedX2, b=processedY2, out=additionResult);
+    And16(a=processedX2, b=processedY2, out=andResult);
+
+    oneBitTo16(in=f, out=f16);
+    Not16(in=f16, out=notF16);
+
+    And16(a=f16, b=additionResult, out=resultIfFWas1);
+    And16(a=notF16, b=andResult, out=resultIfFWas0);
+
+    Or16(a=resultIfFWas1, b=resultIfFWas0, out=fOutput);
+
+    // if no == 1, x = !x
+    Xor16(a=no, b=fOutput, out=out, out[0..7]=outFirstPart, out[8..15]=outSecondPart, out[15]=msb);
+
+    // if out == 0: zr == 1 else zr = 0
+    Or8Way(in=outFirstPart, out=is1InPart1);
+    Or8Way(in=outSecondPart, out=is1InPart2);
+    Or(a=is1InPart1, b=is1InPart2, out=is1inOutput);
+    Not(in=is1inOutput, out=zr);
+
+    // if out < 0: ng == 1 else ng = 0
+    Or(a=msb, b=msb, out=ng);
 }
