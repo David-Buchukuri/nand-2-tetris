@@ -12,6 +12,83 @@ CHIP RAM8 {
     IN in[16], load, address[3];
     OUT out[16];
 
+    // the easiest way would be to have 8 variables
+    // each one depicting if we should load in input in n'th register
+    // we would need 3 and statements to get each variable
+
+    // and then each result should be 'and'-ed with load parameter, coz, if it's set to 0, we shouldn't load anything    
+
     PARTS:
-    //// Replace this comment with your code.
+    Not(in=address[2], out=notAddr2);
+    Not(in=address[1], out=notAddr1);
+    Not(in=address[0], out=notAddr0);
+    
+    And3Way(a=notAddr2, b=notAddr1, c=notAddr0, out=selectZero);
+    And3Way(a=notAddr2, b=notAddr1, c=address[0], out=selectOne);
+    
+    And3Way(a=notAddr2, b=address[1], c=notAddr0, out=selectTwo);
+    And3Way(a=notAddr2, b=address[1], c=address[0], out=selectThree);
+    
+    And3Way(a=address[2], b=notAddr1, c=notAddr0, out=selectFour);
+    And3Way(a=address[2], b=notAddr1, c=address[0], out=selectFive);
+
+    And3Way(a=address[2], b=address[1], c=notAddr0, out=selectSix);
+    And3Way(a=address[2], b=address[1], c=address[0], out=selectSeven);
+
+    And(a=load, b=selectZero, out=loadZero);
+    And(a=load, b=selectOne, out=loadOne);
+    And(a=load, b=selectTwo, out=loadTwo);
+    And(a=load, b=selectThree, out=loadThree);
+
+    And(a=load, b=selectFour, out=loadFour);
+    And(a=load, b=selectFive, out=loadFive);
+    And(a=load, b=selectSix, out=loadSix);
+    And(a=load, b=selectSeven, out=loadSeven);
+    
+    
+    // loading
+    Register(in=in, load=loadZero, out=outZero);
+    Register(in=in, load=loadOne, out=outOne);
+    Register(in=in, load=loadTwo, out=outTwo);
+    Register(in=in, load=loadThree, out=outThree);
+
+    Register(in=in, load=loadFour, out=outFour);
+    Register(in=in, load=loadFive, out=outFive);
+    Register(in=in, load=loadSix, out=outSix);
+    Register(in=in, load=loadSeven, out=outSeven);
+
+
+    // now we can select output
+    // idea is that we will pass to the chip all these variables : selectZero, selectOne, selectTwo....
+    // along with each register's 16 bit output
+    // if first input is 1, it will output the input, otherwise 0
+    // since only 1 from (selectZero, selectOne, selectTwo....) those will be 1
+    // we can guarantee that we will have 7 0's and 1 real 16 bit output
+    // then we can do 8 way or on those 8 output variables and thats it
+    // we got the answer
+
+    Mux16(a=false, b=outZero, sel=selectZero, out=finalZero);
+    Mux16(a=false, b=outOne, sel=selectOne, out=finalOne);
+    Mux16(a=false, b=outTwo, sel=selectTwo, out=finalTwo);
+    Mux16(a=false, b=outThree, sel=selectThree, out=finalThree);
+
+    Mux16(a=false, b=outFour, sel=selectFour, out=finalFour);
+    Mux16(a=false, b=outFive, sel=selectFive, out=finalFive);
+    Mux16(a=false, b=outSix, sel=selectSix, out=finalSix);
+    Mux16(a=false, b=outSeven, sel=selectSeven, out=finalSeven);
+
+    // getting final output
+    Or16(a=finalZero, b=finalOne, out=firstQuarter);
+    Or16(a=finalTwo, b=finalThree, out=secondQuarter);
+
+    Or16(a=finalFour, b=finalFive, out=thirdQuarter);
+    Or16(a=finalSix, b=finalSeven, out=fourthQuarter);
+
+
+    Or16(a=firstQuarter, b=secondQuarter, out=firstHalf);
+    Or16(a=thirdQuarter, b=fourthQuarter, out=secondHalf);
+
+
+    Or16(a=firstHalf, b=secondHalf, out=out);
+
 }
