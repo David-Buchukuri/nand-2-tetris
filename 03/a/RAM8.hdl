@@ -13,30 +13,19 @@ CHIP RAM8 {
     OUT out[16];
 
     PARTS:
-    // d-mux will assign 1 to the right variable, all others will be marked as zeros 
+    // d-mux will assign 1 to the right variable, only if load is set to 1 
     DMux8Way(
-        in=true, 
+        in=load, 
         sel=address, 
-        a=selectZero,
-        b=selectOne,
-        c=selectTwo,
-        d=selectThree,
-        e=selectFour,
-        f=selectFive,
-        g=selectSix,
-        h=selectSeven
+        a=loadZero,
+        b=loadOne,
+        c=loadTwo,
+        d=loadThree,
+        e=loadFour,
+        f=loadFive,
+        g=loadSix,
+        h=loadSeven
     );
-
-    And(a=load, b=selectZero, out=loadZero);
-    And(a=load, b=selectOne, out=loadOne);
-    And(a=load, b=selectTwo, out=loadTwo);
-    And(a=load, b=selectThree, out=loadThree);
-    
-    And(a=load, b=selectFour, out=loadFour);
-    And(a=load, b=selectFive, out=loadFive);
-    And(a=load, b=selectSix, out=loadSix);
-    And(a=load, b=selectSeven, out=loadSeven);
-    
     
     // loading
     Register(in=in, load=loadZero, out=outZero);
