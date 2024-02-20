@@ -12,6 +12,46 @@ CHIP RAM64 {
     IN in[16], load, address[6];
     OUT out[16];
 
+    // logically we need first 3 msbs to select correct RAM8, and then we will 
+    // pass remaining 3 lsb to the selected RAM8 
+
+
     PARTS:
-    //// Replace this comment with your code.
+    // d-mux will assign 1 to the right variable, only if load is set to 1 
+    DMux8Way(
+        in=load, 
+        sel=address[3..5], 
+        a=loadZero,
+        b=loadOne,
+        c=loadTwo,
+        d=loadThree,
+        e=loadFour,
+        f=loadFive,
+        g=loadSix,
+        h=loadSeven
+    );
+
+
+    RAM8(in=in, load=loadZero, address=address[0..2], out=outZero);
+    RAM8(in=in, load=loadOne, address=address[0..2], out=outOne);
+    RAM8(in=in, load=loadTwo, address=address[0..2], out=outTwo);
+    RAM8(in=in, load=loadThree, address=address[0..2], out=outThree);
+
+    RAM8(in=in, load=loadFour, address=address[0..2], out=outFour);
+    RAM8(in=in, load=loadFive, address=address[0..2], out=outFive);
+    RAM8(in=in, load=loadSix, address=address[0..2], out=outSix);
+    RAM8(in=in, load=loadSeven, address=address[0..2], out=outSeven);
+
+    Mux8Way16(
+        sel=address[3..5],
+        a=outZero,
+        b=outOne,
+        c=outTwo,
+        d=outThree,
+        e=outFour,
+        f=outFive,
+        g=outSix,
+        h=outSeven,
+        out=out
+    );
 }
