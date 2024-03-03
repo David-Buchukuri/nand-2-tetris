@@ -22,5 +22,6 @@ M=D
 @temp
 M=0
 
-@14
-0;JMP
+(END)
+    @END
+    0;JMP
