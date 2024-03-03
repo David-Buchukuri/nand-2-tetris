@@ -9,6 +9,7 @@ M=0;
 
 // moving i to D register and adding it to result
 (LOOP_START)
+    // add i to result
     @i
     D=M
     @result
