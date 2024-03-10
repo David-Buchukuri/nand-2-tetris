@@ -19,5 +19,43 @@ CHIP Memory {
     OUT out[16];
 
     PARTS:
-    //// Replace this comment with your code.
+    // how do we know if we want to read/write ram or not
+    // if first msb is 0 we are dealing with the value between 0 and 16383, because
+    // 16383 in binary appears to be 011111111111111. if first msb is 0, no matter what comes
+    // after it, the resulting number will be between 0 and 16383
+    
+    Not(in=address[14], out=selectRam);
+
+    // how do we know if we want to read/write screen or not?
+    // 24575 in binary is 101111111111111
+    // here we can inspect that if we change any bit other than first 2 msb's we will get values
+    // from 16384 to 24575. So to determine if we want to access screen, whe check first 2 bits 
+    // for values 10 respectively. to prove this we can make several observations. msb's value is 2^14 = 16384
+    // after msb must come 0. and after that anything we want. last 13 bit's minimum value can be 0. maximum is
+    // 2^13-1 = 8191. maximum value in total that 15 bit binary number can have having second msb 0 is 16384 + 8191
+    // which is 24575. that's exactly what we want
+   
+    Not(in=address[13], out=isMsbTwoZero);
+    And(a=address[14], b=isMsbTwoZero, out=selectScreen);
+
+    // how do we know if we want to access keyboard?
+    // well if both selectRam and selectScreen are false, we read from the keyboard.
+    // if input address was any other than keyboard's address, in our logic written for screen and ram addresses,
+    // we would have made selectRam or selectScreen true
+
+    Not(in=selectScreen, out=notSelectScreen);
+    Not(in=selectRam, out=notSelectRam);
+    And(a=notSelectScreen, b=notSelectRam, out=selectKeyboard);
+
+
+    And(a=load, b=selectRam, out=writeRam);
+    And(a=load, b=selectScreen, out=writeScreen);
+
+    RAM16K(in=in, load=writeRam, address=address[0..13], out=ramOut);
+    Screen(in=in, load=writeScreen, address=address[0..12], out=screenOut);
+    Keyboard(out=keyOut);
+
+
+    Mux16(sel=selectRam, a=screenOut, b=ramOut, out=ramOrScreenOutput);
+    Mux16(sel=selectKeyboard, a=ramOrScreenOutput, b=keyOut, out=out);    
 }

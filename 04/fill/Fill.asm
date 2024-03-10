@@ -89,7 +89,6 @@ A=M
     // and we jump back to the loop
     // otherwise, make register white and only then decrement blackTill
 
-
     @SCREEN
     A=A-1
     D=A
@@ -107,9 +106,3 @@ A=M
     
     @LOOP
     0;JMP
-
-
-
-
-
-
