@@ -32,5 +32,134 @@ CHIP CPU {
         pc[15];          // Address of next instruction
 
     PARTS:
-    //// Replace this comment with your code.
+
+    Not(in=instruction[15], out=isAInstruction);
+    Mux16(a=aluOut, b=instruction, sel=isAInstruction, out=aRegisterMuxOut);
+
+    // we want to load value inside A register when
+    //  1. A instruction
+    //  2. C instruction when it has A register as a destination 
+    //      - when A is a destination 6'th bit of C instruction is always 1
+
+    Or(a=isAInstruction, b=instruction[5], out=loadARegister);
+    ARegister(in=aRegisterMuxOut, load=loadARegister, out=ARegisterOut);
+
+
+    // if we have c instruction where destination is D we set load bit as 1
+    //      - in c instruction when 5'th bit is set to 1, destination is D
+
+    Not(in=isAInstruction, out=isCInstruction);
+    And(a=isCInstruction, b=instruction[4], out=loadDRegister);
+    DRegister(in=aluOut, load=loadDRegister, out=DRegisterOut);
+
+
+    // when 12'th bit of C instruction is set to 0, we feed alu with A register's output
+    // because when that bit is set to 0, in the computations in alu there is an A register.
+    // if that bit is set to 1, we feed alu with selected memory input
+  
+    Mux16(a=ARegisterOut, b=inM, sel=instruction[12], out=aluInputTwo);
+
+    ALU(
+        x=DRegisterOut, 
+        y=aluInputTwo, 
+        zx=instruction[11], 
+        nx=instruction[10], 
+        zy=instruction[9], 
+        ny=instruction[8], 
+        f=instruction[7], 
+        no=instruction[6], 
+        zr=aluOutZr, 
+        ng=aluOutNg,
+        out=aluOut,
+        out=outM
+    );
+
+    // writeM should be set to one if we have a C instruction with destination of M
+    // when 4'th bit of an instruction if set to 1, it means the destination is M
+    And(a=isCInstruction, b=instruction[3], out=writeM);
+
+    Not16(in=ARegisterOut, out=ARegisterOutNegated);
+    Not16(in=ARegisterOutNegated, out[0..14]=addressM);
+
+
+    //counter
+
+    // determining in which case should we load
+    DMux8Way(
+        in=isCInstruction,
+        sel=instruction[0..2], 
+        a=shouldIncrementBecauseCInstruction,
+        b=shouldJGT,
+        c=shouldJEQ,
+        d=shouldJGE,
+        e=shouldJLT,
+        f=shouldJNE,
+        g=shouldJLE,
+        h=shouldJMP
+    );
+
+    // determining the case we have
+    Not(in=aluOutZr, out=notZr);
+    Not(in=aluOutNg, out=notNg);
+
+    And(a=notZr, b=notNg, out=isGT);
+    Or(a=aluOutZr, b=notNg, out=isGE);
+    Or(a=aluOutNg, b=aluOutZr, out=isLE);
+
+
+    // deciding to load or not based on processed data above
+    And(a=shouldJGT, b=isGT, out=loadGT);
+    And(a=shouldJEQ, b=aluOutZr, out=loadEQ);
+    And(a=shouldJGE, b=isGE, out=loadGE);
+    And(a=shouldJLT, b=aluOutNg, out=loadLT);
+    And(a=shouldJNE, b=notZr, out=loadNE);
+    And(a=shouldJLE, b=isLE, out=loadLE);
+
+    Or8Way(
+        in[0]=loadGT,
+        in[1]=loadEQ,
+        in[2]=loadGE,
+        in[3]=loadLT,
+        in[4]=loadNE,
+        in[5]=loadLE,
+        in[6]=shouldJMP,
+        in[7]=false,
+        out=shouldLoad
+    );
+
+
+
+    // there might be the case where all the conditions above are false, we want to increment in that case
+    Not(in=isCInstruction, out=shouldIncrementBecauseAInstruction);
+    Not(in=shouldLoad, out=shouldIncrementBecauseNothingToLoad);
+
+    Or(a=shouldIncrementBecauseAInstruction, b=shouldIncrementBecauseCInstruction, out=incrementByInstructions);
+    Or(a=incrementByInstructions, b=shouldIncrementBecauseNothingToLoad, out=shouldIncrement);
+
+    PC(in=ARegisterOut, load=shouldLoad, inc=shouldIncrement, reset=reset, out[0..14]=pc);
 }
+/**
+ * jump j1 j2 j3
+ * -------------
+ * null 0  0  0
+ * JGT  0  0  1
+ * JEQ  0  1  0
+ * JGE  0  1  1
+ * JLT  1  0  0
+ * JNE  1  0  1
+ * JLE  1  1  0
+ * JMP  1  1  1
+
+ * if jmp == 000:
+ *     just increment
+
+ * if jump == 111:
+ *     jump right away
+
+ * JGT = !zr and !ng
+ * JEQ = zr
+ * JGE = zr or !ng
+ * JLT = ng
+ * JNE = !zr
+ * JLE = ng or zr
+ */
