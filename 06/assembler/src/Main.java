@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.HashMap;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -9,6 +10,11 @@ public class Main {
         try{
             List<String> parsedProgram = Parser.parse(args[0]);
             System.out.println(parsedProgram);
+
+            SymbolTable symbolTable = new SymbolTable(parsedProgram);
+            System.out.println(
+                    symbolTable.symbolsToAddresses
+            );
         }catch(Exception e){
             System.out.println(e.getMessage());
         }

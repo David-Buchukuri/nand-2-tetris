@@ -8,11 +8,11 @@ public class Parser {
     public static List<String> parse(String path) throws FileNotFoundException {
         List<String> withoutComments = new ArrayList<String>();
 
-        File myObj = new File(path);
-        Scanner myReader = new Scanner(myObj);
+        File file = new File(path);
+        Scanner reader = new Scanner(file);
 
-        while (myReader.hasNextLine()) {
-            String line = myReader.nextLine().trim();
+        while (reader.hasNextLine()) {
+            String line = reader.nextLine().trim();
             int idx = line.indexOf("//");
 
             if(line.length() == 0 || idx == 0) {
@@ -31,7 +31,7 @@ public class Parser {
             }
         }
 
-        myReader.close();
+        reader.close();
         return withoutComments;
     }
 
