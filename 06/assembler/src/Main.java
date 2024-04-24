@@ -11,10 +11,9 @@ public class Main {
             List<String> parsedProgram = Parser.parse(args[0]);
             System.out.println(parsedProgram);
 
-            SymbolTable symbolTable = new SymbolTable(parsedProgram);
-            System.out.println(
-                    symbolTable.symbolsToAddresses
-            );
+            SymbolTable symbolTable = new SymbolTable();
+            List<String> commandsWithBinaryAddresses = symbolTable.symbolsToAddresses(parsedProgram);
+            System.out.println(commandsWithBinaryAddresses);
         }catch(Exception e){
             System.out.println(e.getMessage());
         }

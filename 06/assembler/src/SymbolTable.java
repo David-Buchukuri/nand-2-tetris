@@ -1,10 +1,11 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class SymbolTable {
     public HashMap<String, Integer> symbolsToAddresses = new HashMap<String, Integer>();
 
-    public SymbolTable(List<String> parsedProgram){
+    public SymbolTable(){
         this.symbolsToAddresses.put("SP", 0);
         this.symbolsToAddresses.put("LCL", 1);
         this.symbolsToAddresses.put("ARG", 2);
@@ -28,16 +29,24 @@ public class SymbolTable {
         this.symbolsToAddresses.put("R15", 15);
         this.symbolsToAddresses.put("SCREEN", 16384);
         this.symbolsToAddresses.put("KBD", 24576);
-
-        this.symbolsToAddresses(parsedProgram);
     }
 
-    private void symbolsToAddresses(List<String> parsed){
-        for(int i = 0; i < parsed.size(); i++){
-            String command = parsed.get(i);
+    public List<String> symbolsToAddresses(List<String> parsed){
+        // without label declarations
+        List<String> filteredCommands = this.removeLabelsAndSaveAddresses(parsed);
+
+        this.variablesToBinaryAddresses(filteredCommands);
+        return filteredCommands;
+    }
+
+    private List<String> removeLabelsAndSaveAddresses(List<String> commands){
+        List<String> filteredCommands = new ArrayList<>();
+        for(int i = 0; i < commands.size(); i++){
+            String command = commands.get(i);
             if(
                 !Parser.isLabel(command)
             ){
+                filteredCommands.add(command);
                 continue;
             }
 
@@ -46,19 +55,60 @@ public class SymbolTable {
             this.symbolsToAddresses.put(labelInVariableFormat, i);
         }
 
+        return filteredCommands;
+    }
+
+    private void variablesToBinaryAddresses(List<String> commands){
         int nextVariableAddress = 16;
 
-        for(int i = 0; i < parsed.size(); i++){
-            String command = parsed.get(i);
+        for(int i = 0; i < commands.size(); i++){
+            String command = commands.get(i);
 
-            if(!Parser.isSymbolicVariable(command)){
+            if(!Parser.isVariable(command)){
                 continue;
             }
 
-            if(!this.symbolsToAddresses.containsKey(command)){
-                this.symbolsToAddresses.put(command, nextVariableAddress);
-                nextVariableAddress++;
+
+            int address = 0;
+            if(Parser.isSymbolicVariable(command)){
+                if(
+                    !this.symbolsToAddresses.containsKey(command)
+                ){
+                    this.symbolsToAddresses.put(command, nextVariableAddress);
+                    nextVariableAddress++;
+                }
+
+                address = this.symbolsToAddresses.get(command);
+            }else{
+                address = Integer.parseInt(
+                        command.substring(1)
+                );
             }
+
+            String binaryAddress = this.sixteenBitBinaryString(address);
+            commands.set(i, "@" + binaryAddress);
         }
+    }
+
+    private String sixteenBitBinaryString(int decimal){
+        String binaryString = Integer.toBinaryString(decimal);
+
+        if(binaryString.length() > 16){
+            return binaryString.substring(
+                    binaryString.length() - 16,
+                    binaryString.length()
+            );
+        }
+
+        int zerosToFill = 16 - binaryString.length();
+        StringBuilder zeros = new StringBuilder();
+
+        for(int i = 0; i < zerosToFill; i++){
+            zeros.append(0);
+        }
+
+        zeros.append(binaryString);
+
+        return zeros.toString();
     }
 }

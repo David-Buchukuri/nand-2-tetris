@@ -58,4 +58,11 @@ public class Parser {
 
         return false;
     }
+
+    public static boolean isVariable(String statement){
+        if(statement.charAt(0) == '@'){
+            return true;
+        };
+        return false;
+    }
 }
