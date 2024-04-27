@@ -65,4 +65,32 @@ public class Parser {
         };
         return false;
     }
+
+    public static String getDest(String cCommand){
+        String[] parts = cCommand.split("=");
+        if(parts.length > 1){
+            return parts[0];
+        }
+        return null;
+    }
+
+    public static String getComp(String cCommand){
+        String[] parts = cCommand.split("=");
+
+        String[] compAndJump = parts[parts.length - 1].split(";");
+
+        return compAndJump[0];
+    }
+
+    public static String getJump(String cCommand){
+        String[] parts = cCommand.split("=");
+
+        String[] compAndJump = parts[parts.length - 1].split(";");
+
+        if(compAndJump.length > 1){
+            return compAndJump[1];
+        }
+
+        return null;
+    }
 }
