@@ -6,9 +6,6 @@ public class Code {
     public HashMap<String, String> compToBinary = new HashMap<String, String>();
     public HashMap<String, String> jumpToBinary = new HashMap<String, String>();
 
-    //    from idx 3 to 6
-    //    must be 011 and i have 001, command M=1;
-
     public Code(){
         this.destToBinary.put(null, "000");
         this.jumpToBinary.put(null, "000");
